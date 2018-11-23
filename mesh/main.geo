@@ -5,30 +5,61 @@ Include "parameters.geo";
 
 ce = 0;
 
+all_points[] = {}; // used for aoa rotation later.
 
 // top surface points.
 top_lip_dx = nose_radius * Sin(nose_span * Pi / 180);
+all_points[] += ce;
 Point(ce++) = {top_lip_dx, airfoil_height, 0, airfoil_lc};
 peak = ce - 1;
 top_lip_y = airfoil_height - nose_radius * (1 - Cos(nose_span * Pi / 180));
+all_points[] += ce;
 Point(ce++) = {0, top_lip_y, 0, airfoil_lc};
 top_lip = ce - 1;
+all_points[] += ce;
 Point(ce++) = {top_lip_dx, airfoil_height - nose_radius, 0, airfoil_lc};
 nose_center = ce - 1;
 top_slope_angle = Atan(airfoil_height / (1 - top_lip_dx));
+all_points[] += ce;
 Point(ce++) = {top_lip_dx + Sin(top_slope_angle) * airfoil_height, Cos(top_slope_angle) * airfoil_height, 0, airfoil_lc};
 back_arc = ce - 1;
+all_points[] += ce;
 Point(ce++) = {top_lip_dx, 0, 0, airfoil_lc};
 back_arc_center = ce - 1;
 
 // bottom surface points.
 bottom_le = ce;
+all_points[] += ce;
 Point(ce++) = {opening, 0, 0, airfoil_lc};
 te_bottom = ce;
+all_points[] += ce;
 Point(ce++) = {trailing_edge_location, 0, 0, te_lc};
 te_height = (1 - trailing_edge_location) * Tan(top_slope_angle);
 te_top = ce;
+all_points[] += ce;
 Point(ce++) = {trailing_edge_location, te_height, 0, te_lc};
+
+// Now rotate points for aoa.
+Macro RotatePoints
+    angle = Arguments[0];
+    center[] = Arguments[{1:3}];
+    pointIds[] = Arguments[{4 : #Arguments[] - 1}];
+    Rotate {{0, 0, 1}, {center[0], center[1], center[2]}, angle}
+    {
+        Point{pointIds[]};
+    }
+Return
+
+Macro RotateAirfoilPoints
+    // rotates pointId about origin.
+    Arguments[0] *= -1.0;
+    Arguments[{1:3}] = {0, 0, 0}; // rotation center.
+    Arguments[{4 : #Arguments[] - 1}] = Arguments[{4 : #Arguments[] - 1}];
+    Call RotatePoints;
+Return
+
+Arguments[] = {aoa * Pi / 180, 0, 0, 0, all_points[]};
+Call RotateAirfoilPoints;
 
 airfoil_lines[] = {};
 airfoil_lines[] += ce;
