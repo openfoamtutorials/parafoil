@@ -13,4 +13,5 @@ for f in folders:
         os.system("rm -r case/" + f)
 os.system("rm main.msh")
 os.system("rm -r case/constant/polyMesh")
+os.system("rm -r case/postProcessing")
 
