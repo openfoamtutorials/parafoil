@@ -1,8 +1,7 @@
-Include "Airfoil.geo";
 Include "WindTunnel.geo";
 Include "parameters.geo";
 
-// Units are multiples of chord.
+// length units are chord-normalized.
 
 ce = 0;
 
@@ -48,40 +47,36 @@ WindTunnelLength = 40;
 WindTunnelLc = 3;
 Call WindTunnel;
 
+// Extrude and label wind tunnel region.
 Surface(ce++) = {WindTunnelLoop, airfoil_loop};
-TwoDimSurf = ce - 1;
-
+extrusion_base = ce - 1;
 cellDepth = 0.1;
-
 ids[] = Extrude {0, 0, cellDepth}
 {
-	Surface{TwoDimSurf};
+	Surface{extrusion_base};
 	Layers{1};
 	Recombine;
 };
-
-/*
-Arguments[] = {0, bendHeight, thickness, AirfoilLc, 0, 0, 2};
-Call Airfoil;
-AirfoilLoop = Results[0];
-
-
-Surface(ce++) = {WindTunnelLoop, AirfoilLoop};
-TwoDimSurf = ce - 1;
-
-cellDepth = 0.1;
-
-ids[] = Extrude {0, 0, cellDepth}
-{
-	Surface{TwoDimSurf};
-	Layers{1};
-	Recombine;
-};
-
 Physical Surface("outlet") = {ids[2]};
 Physical Surface("walls") = {ids[{3, 5}]};
 Physical Surface("inlet") = {ids[4]};
-Physical Surface("airfoil") = {ids[{6:11}]};
-Physical Surface("frontAndBack") = {ids[0], TwoDimSurf};
-Physical Volume("volume") = {ids[1]};
-*/
+Physical Surface("airfoil") = {ids[{7:10}]};
+front_and_back[] = {ids[0], extrusion_base};
+volumes[] = {ids[1]};
+
+// Extrude and label airfoil interior.
+ce += 10000; // skip id because new ones were generated in the previous extrusion.
+Plane Surface(ce++) = airfoil_loop;
+extrusion_base = ce - 1;
+cellDepth = 0.1;
+ids[] = Extrude {0, 0, cellDepth}
+{
+	Surface{extrusion_base};
+	Layers{1};
+	Recombine;
+};
+front_and_back[] += {ids[0], extrusion_base};
+Physical Surface("frontAndBack") = front_and_back[];
+volumes[] += {ids[1]};
+Physical Volume("volume") = volumes[];
+
