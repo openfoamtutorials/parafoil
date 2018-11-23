@@ -5,6 +5,7 @@ Include "parameters.geo";
 
 ce = 0;
 
+
 // top surface points.
 top_lip_dx = nose_radius * Sin(nose_span * Pi / 180);
 Point(ce++) = {top_lip_dx, airfoil_height, 0, airfoil_lc};
@@ -14,18 +15,20 @@ Point(ce++) = {0, top_lip_y, 0, airfoil_lc};
 top_lip = ce - 1;
 Point(ce++) = {top_lip_dx, airfoil_height - nose_radius, 0, airfoil_lc};
 nose_center = ce - 1;
-top_slope_angle = Atan(top_lip_y / (1 - top_lip_dx));
+top_slope_angle = Atan(airfoil_height / (1 - top_lip_dx));
 Point(ce++) = {top_lip_dx + Sin(top_slope_angle) * airfoil_height, Cos(top_slope_angle) * airfoil_height, 0, airfoil_lc};
 back_arc = ce - 1;
 Point(ce++) = {top_lip_dx, 0, 0, airfoil_lc};
 back_arc_center = ce - 1;
 
-
 // bottom surface points.
+bottom_le = ce;
 Point(ce++) = {opening, 0, 0, airfoil_lc};
-bottom_le = ce - 1;
-Point(ce++) = {1, 0, 0, airfoil_lc};
-te = ce - 1;
+te_bottom = ce;
+Point(ce++) = {trailing_edge_location, 0, 0, te_lc};
+te_height = (1 - trailing_edge_location) * Tan(top_slope_angle);
+te_top = ce;
+Point(ce++) = {trailing_edge_location, te_height, 0, te_lc};
 
 airfoil_lines[] = {};
 airfoil_lines[] += ce;
@@ -33,9 +36,11 @@ Circle(ce++) = {top_lip, nose_center, peak};
 airfoil_lines[] += ce;
 Circle(ce++) = {peak, back_arc_center, back_arc};
 airfoil_lines[] += ce;
-Line(ce++) = {back_arc, te};
+Line(ce++) = {back_arc, te_top};
 airfoil_lines[] += ce;
-Line(ce++) = {te, bottom_le};
+Line(ce++) = {te_top, te_bottom};
+airfoil_lines[] += ce;
+Line(ce++) = {te_bottom, bottom_le};
 airfoil_lines[] += ce;
 Line(ce++) = {bottom_le, top_lip};
 
@@ -60,7 +65,6 @@ ids[] = Extrude {0, 0, cellDepth}
 Physical Surface("outlet") = {ids[2]};
 Physical Surface("walls") = {ids[{3, 5}]};
 Physical Surface("inlet") = {ids[4]};
-Physical Surface("airfoil") = {ids[{7:10}]};
 front_and_back[] = {ids[0], extrusion_base};
 volumes[] = {ids[1]};
 
@@ -75,6 +79,7 @@ ids[] = Extrude {0, 0, cellDepth}
 	Layers{1};
 	Recombine;
 };
+Physical Surface("airfoil") = {ids[{2:6}]};
 front_and_back[] += {ids[0], extrusion_base};
 Physical Surface("frontAndBack") = front_and_back[];
 volumes[] += {ids[1]};
