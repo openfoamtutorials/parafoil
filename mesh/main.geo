@@ -80,12 +80,13 @@ Line Loop(ce++) = airfoil_lines[];
 
 WindTunnelHeight = 20;
 WindTunnelLength = 40;
-WindTunnelLc = 3;
+WindTunnelLc = 1;
 Call WindTunnel;
 
 // Extrude and label wind tunnel region.
 Surface(ce++) = {WindTunnelLoop, airfoil_loop};
 extrusion_base = ce - 1;
+// Recombine Surface{extrusion_base};
 cellDepth = 0.1;
 ids[] = Extrude {0, 0, cellDepth}
 {
@@ -103,6 +104,7 @@ volumes[] = {ids[1]};
 ce += 10000; // skip id because new ones were generated in the previous extrusion.
 Plane Surface(ce++) = airfoil_loop;
 extrusion_base = ce - 1;
+// Recombine Surface{extrusion_base};
 cellDepth = 0.1;
 ids[] = Extrude {0, 0, cellDepth}
 {
