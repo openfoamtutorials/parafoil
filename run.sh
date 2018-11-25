@@ -11,6 +11,15 @@ gmshToFoam main.msh -case case
 createBaffles -case case -dict system/baffleDict -overwrite
 # Adjust polyMesh/boundary:
 changeDictionary -case case
-# Finally, run the simulation:
-simpleFoam -case case
+
+# Here you can choose to run in parallel or single-core.
+# Comment out appropriately.
+
+# Parallel decomposition of domain (comment this out if single-core):
+decomposePar -case case
+# Parallel run (comment this out if single-core):
+mpirun -np 4 simpleFoam -case case -parallel
+
+# Single-core run (comment this out if parallel):
+#simpleFoam -case case
 
