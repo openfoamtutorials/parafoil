@@ -2,6 +2,10 @@
 
 import os
 
+def delete_if_exists(path):
+    if os.path.exists(path):
+        os.system("rm -r " + path)
+
 folders = [x for x in os.listdir("case/") if os.path.isdir("case/" + x)]
 for f in folders:
     dotsep = f.split(".")
@@ -11,7 +15,7 @@ for f in folders:
     isnum = f.isdigit() or isfloat or issci
     if isnum and float(f) != 0:
         os.system("rm -r case/" + f)
-os.system("rm main.msh")
-os.system("rm -r case/constant/polyMesh")
-os.system("rm -r case/postProcessing")
+delete_if_exists("main.msh")
+delete_if_exists("case/constant/polyMesh")
+delete_if_exists("case/postProcessing")
 
